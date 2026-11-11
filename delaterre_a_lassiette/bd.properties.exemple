@@ -1,0 +1,7 @@
+# Modèle de configuration de la base de données.
+# 1. Copier ce fichier et renommer la copie en : bd.properties (même dossier)
+# 2. Remplir les 3 valeurs avec les identifiants donnés par l'encadrant
+# 3. Ne JAMAIS envoyer bd.properties sur GitHub (il est dans le .gitignore)
+url=jdbc:mysql://nemrod.ens2m.fr:3306/NOM_DE_LA_BASE?serverTimezone=UTC
+utilisateur=
+motdepasse=

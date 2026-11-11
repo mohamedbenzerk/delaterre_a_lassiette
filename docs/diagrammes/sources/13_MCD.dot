@@ -1,0 +1,86 @@
+// MCD (Merise) — De la terre à l'assiette
+// Générer l'image : dot -Tpng -Gdpi=150 13_MCD.dot -o 13_MCD.png
+graph MCD {
+  graph [layout=neato, overlap=false, splines=true, sep="+18", fontname="DejaVu Sans", label=<<b>MCD — Modèle Conceptuel de Données (Merise)</b><br/><font point-size="11">Identifiant souligné · cardinalités (min,max) côté entité</font>>, labelloc=t, fontsize=20, fontcolor="#2F5D3A", pad=0.4];
+  node [fontname="DejaVu Sans", fontsize=11];
+  edge [fontname="DejaVu Sans", fontsize=11, color="#3C4A3E", fontcolor="#7A2E2E", labelfontcolor="#7A2E2E", labelfontsize=11];
+
+  // ---------- Entités ----------
+  node [shape=plain];
+  JOUEUR [pos="0,6!", label=<<table border="1" cellborder="0" cellspacing="0" cellpadding="4" color="#4F7A55" bgcolor="#F7FAF5">
+    <tr><td bgcolor="#DDEBD8"><b>JOUEUR</b></td></tr>
+    <tr><td align="left"><u>id_joueur</u><br align="left"/>pseudo<br align="left"/>nb_parties<br align="left"/>nb_victoires<br align="left"/></td></tr></table>>];
+  PARTIE [pos="8,6!", label=<<table border="1" cellborder="0" cellspacing="0" cellpadding="4" color="#4F7A55" bgcolor="#F7FAF5">
+    <tr><td bgcolor="#DDEBD8"><b>PARTIE</b></td></tr>
+    <tr><td align="left"><u>id_partie</u><br align="left"/>nom<br align="left"/>etat<br align="left"/>ordre_courant<br align="left"/>num_tour<br align="left"/>date_creation<br align="left"/></td></tr></table>>];
+  PION [pos="4,3!", label=<<table border="1" cellborder="0" cellspacing="0" cellpadding="4" color="#4F7A55" bgcolor="#F7FAF5">
+    <tr><td bgcolor="#DDEBD8"><b>PION</b></td></tr>
+    <tr><td align="left"><u>id_pion</u><br align="left"/>couleur<br align="left"/>ordre<br align="left"/>pret<br align="left"/>zone<br align="left"/>index_case<br align="left"/>tours_bloques<br align="left"/>protege_carte<br align="left"/>tours_epouvantail<br align="left"/>cible_appat<br align="left"/>rang<br align="left"/>score<br align="left"/></td></tr></table>>];
+  RECETTE [pos="-1,0!", label=<<table border="1" cellborder="0" cellspacing="0" cellpadding="4" color="#4F7A55" bgcolor="#F7FAF5">
+    <tr><td bgcolor="#DDEBD8"><b>RECETTE</b></td></tr>
+    <tr><td align="left"><u>id_recette</u><br align="left"/>nom<br align="left"/>image<br align="left"/></td></tr></table>>];
+  INGREDIENT [pos="3,-2.6!", label=<<table border="1" cellborder="0" cellspacing="0" cellpadding="4" color="#4F7A55" bgcolor="#F7FAF5">
+    <tr><td bgcolor="#DDEBD8"><b>INGREDIENT</b></td></tr>
+    <tr><td align="left"><u>id_ingredient</u><br align="left"/>nom<br align="left"/>type<br align="left"/>image<br align="left"/></td></tr></table>>];
+  CARTE [pos="8.5,-1.5!", label=<<table border="1" cellborder="0" cellspacing="0" cellpadding="4" color="#4F7A55" bgcolor="#F7FAF5">
+    <tr><td bgcolor="#DDEBD8"><b>CARTE</b></td></tr>
+    <tr><td align="left"><u>id_carte</u><br align="left"/>nom<br align="left"/>famille<br align="left"/>valeur<br align="left"/>description<br align="left"/>nb_exemplaires<br align="left"/>image<br align="left"/></td></tr></table>>];
+  MONSTRE [pos="13,6!", label=<<table border="1" cellborder="0" cellspacing="0" cellpadding="4" color="#4F7A55" bgcolor="#F7FAF5">
+    <tr><td bgcolor="#DDEBD8"><b>MONSTRE</b></td></tr>
+    <tr><td align="left"><u>id_monstre</u><br align="left"/>type<br align="left"/>zone<br align="left"/>index_case<br align="left"/></td></tr></table>>];
+  ACTION [pos="11.5,2.2!", label=<<table border="1" cellborder="0" cellspacing="0" cellpadding="4" color="#4F7A55" bgcolor="#F7FAF5">
+    <tr><td bgcolor="#DDEBD8"><b>ACTION</b> (journal)</td></tr>
+    <tr><td align="left"><u>id_action</u><br align="left"/>num_tour<br align="left"/>type<br align="left"/>texte<br align="left"/>date_action<br align="left"/></td></tr></table>>];
+
+  // ---------- Associations ----------
+  node [shape=ellipse, style=filled, fillcolor="#FFF8E1", color="#C9A227", fontsize=11, margin="0.08,0.04"];
+  CONTROLER [pos="1.6,4.5!", label="CONTRÔLER"];
+  PARTICIPER [pos="6.4,4.6!", label="PARTICIPER"];
+  CUISINER [pos="1.2,1.6!", label="CUISINER"];
+  COMPOSER [pos="0.4,-2.4!", label="COMPOSER"];
+  STOCKER [pos="4.2,-0.6!", label="STOCKER"];
+  TENIR [pos="6.8,0.9!", label=<TENIR<br/><font point-size="9">emplacement</font>>];
+  HEBERGER [pos="10.6,6!", label="HÉBERGER"];
+  JOURNALISER [pos="10.3,4.1!", label="JOURNALISER"];
+  EFFECTUER [pos="8.2,3.0!", label="EFFECTUER"];
+  VISER [pos="8.1,2.1!", label="VISER"];
+  UTILISER [pos="10.6,0.2!", label="UTILISER"];
+  DECLENCHER [pos="13.4,4.0!", label="DÉCLENCHER"];
+
+  // ---------- Liens + cardinalités ----------
+  JOUEUR -- CONTROLER [taillabel="0,n", labeldistance=2.2];
+  CONTROLER -- PION [headlabel="1,1", labeldistance=2.2];
+
+  PARTIE -- PARTICIPER [taillabel="1,4", labeldistance=2.2];
+  PARTICIPER -- PION [headlabel="1,1", labeldistance=2.2];
+
+  PION -- CUISINER [taillabel="0,1", labeldistance=2.2];
+  CUISINER -- RECETTE [headlabel="0,n", labeldistance=2.2];
+
+  RECETTE -- COMPOSER [taillabel="1,n", labeldistance=2.2];
+  COMPOSER -- INGREDIENT [headlabel="0,n", labeldistance=2.2];
+
+  PION -- STOCKER [taillabel="0,4", labeldistance=2.2];
+  STOCKER -- INGREDIENT [headlabel="0,n", labeldistance=2.2];
+
+  PION -- TENIR [taillabel="0,3", labeldistance=2.2];
+  TENIR -- CARTE [headlabel="0,n", labeldistance=2.2];
+
+  PARTIE -- HEBERGER [taillabel="3,3", labeldistance=2.2];
+  HEBERGER -- MONSTRE [headlabel="1,1", labeldistance=2.2];
+
+  PARTIE -- JOURNALISER [taillabel="0,n", labeldistance=2.2];
+  JOURNALISER -- ACTION [headlabel="1,1", labeldistance=2.2];
+
+  PION -- EFFECTUER [taillabel="0,n", labeldistance=2.2];
+  EFFECTUER -- ACTION [headlabel="0,1", labeldistance=2.2];
+
+  PION -- VISER [taillabel="0,n", labeldistance=2.2];
+  VISER -- ACTION [headlabel="0,1", labeldistance=2.2];
+
+  CARTE -- UTILISER [taillabel="0,n", labeldistance=2.2];
+  UTILISER -- ACTION [headlabel="0,1", labeldistance=2.2];
+
+  MONSTRE -- DECLENCHER [taillabel="0,n", labeldistance=2.2];
+  DECLENCHER -- ACTION [headlabel="0,1", labeldistance=2.2];
+}

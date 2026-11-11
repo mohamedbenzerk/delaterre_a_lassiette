@@ -1,0 +1,37 @@
+@startuml 11_etats_pion
+!include style.iuml
+title Diagramme d'états — Un pion (colonne PION.zone + inventaire)
+hide empty description
+
+[*] --> EnAttente : le joueur rejoint la partie
+state EnAttente : salle d'attente,\nchoix de la recette
+
+EnAttente --> Ferme : la partie démarre\n(case Départ)
+
+state Ferme {
+  [*] --> Recolte
+  state Recolte : moins de 4 ingrédients\ntourne dans la boucle
+  state Complet : 4 ingrédients réunis
+  Recolte --> Recolte : s'arrête sur un ingrédient utile\n[moins de 4]
+  Recolte --> Complet : récolte le 4e ingrédient
+  Complet --> Recolte : Sanglier ou carte Vol\n(perd 1 ingrédient)
+}
+
+state Route : le pion est un camion
+state Cuisine : étapes : laver, couper,\ncuire, dresser
+state Fini : rang = 1, 2 ou 3\n(ou 4 si dernier)
+
+Ferme --> Route : passe par la Grange\n[état Complet]
+Route --> Cuisine : arrive à l'entrée\nde la Cuisine
+Cuisine --> Fini : atteint l'Assiette
+Fini --> [*]
+
+note right of Route
+  Dans toutes les zones, le pion peut être
+  « bloqué » (toursBloques > 0) par la carte
+  Panne ou par la Tempête : il passe alors
+  son tour, sans changer de zone.
+  Les cartes Sécheresse / Bouchon / Rat
+  le font reculer dans sa zone.
+end note
+@enduml

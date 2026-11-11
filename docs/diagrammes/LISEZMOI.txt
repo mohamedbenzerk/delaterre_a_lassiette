@@ -1,0 +1,26 @@
+LISTE DES DIAGRAMMES — De la terre à l'assiette
+
+Nom du fichier : numéro_TYPE_Sujet_RESPONSABLE.png
+Les diagrammes ont été créés par toute l'équipe. Le responsable est celui qui les présente et les tient à jour si le code change.
+
+01_CasUtilisation_Joueurs-et-Monstre_PO.png
+02_Classes_VueEnsemble-3-packages_SM.png
+03_Classes_Moteur_DevMO.png
+04_Classes_Interface-et-SQL_DevIG_MONSTER-DevBDD.png
+05_Sequence_SalleAttente_DevBDD.png
+06_Sequence_TourJoueur_DevMO.png
+07_Sequence_TourMonstre_DevIG_MONSTER.png
+08_Activite_PartieComplete_PO.png
+09_Activite_TourJoueur_DevMO.png
+10_Etats_Partie_SM.png
+11_Etats_Pion_DevMO.png
+12_Deploiement_4PC-et-Serveur_SM.png
+13_MCD_BaseDeDonnees_DevBDD.png
+14_MLD_Tables_DevBDD.png
+
+Responsables :
+- PO : 01, 08
+- SM : 02, 10, 12
+- DevBDD : 04 (partie sql), 05, 13, 14
+- DevMO : 03, 06, 09, 11
+- DevIG_MONSTER : 04 (partie ig), 07

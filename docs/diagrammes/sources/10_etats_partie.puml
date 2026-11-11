@@ -1,0 +1,26 @@
+@startuml 10_etats_partie
+!include style.iuml
+title Diagramme d'états — La partie (colonne PARTIE.etat)
+hide empty description
+
+[*] --> ATTENTE : l'hôte crée la partie
+
+state ATTENTE : salle d'attente\njoueurs : 1 à 4
+state CHOIX_RECETTE : chaque joueur\nchoisit son plat
+state EN_COURS {
+  [*] --> TourJoueur
+  state TourJoueur : ordre_courant = 1, 2, 3 ou 4
+  state TourMonstre : calculé par l'hôte
+  TourJoueur --> TourJoueur : joueur suivant\n[ordre < 4]
+  TourJoueur --> TourMonstre : tour complet\n[ordre = 4]
+  TourMonstre --> TourJoueur : num_tour + 1\nordre_courant = 1
+}
+state TERMINEE : classement affiché\nscores enregistrés
+
+ATTENTE --> ATTENTE : un joueur rejoint / se déclare prêt
+ATTENTE --> CHOIX_RECETTE : l'hôte lance\n[4 joueurs prêts]
+ATTENTE --> [*] : l'hôte quitte
+CHOIX_RECETTE --> EN_COURS : [les 4 recettes choisies]
+EN_COURS --> TERMINEE : [3 joueurs ont atteint l'Assiette]
+TERMINEE --> [*]
+@enduml

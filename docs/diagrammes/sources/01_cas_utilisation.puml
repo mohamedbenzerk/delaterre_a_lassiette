@@ -1,0 +1,62 @@
+@startuml 01_cas_utilisation
+!include style.iuml
+title Diagramme de cas d'utilisation — De la terre à l'assiette
+left to right direction
+
+actor "Joueur" as J
+actor "Hôte\n(joueur qui crée\nla partie)" as H
+actor "Monstre (PNJ)\n<<géré par le jeu>>" as M
+actor "Serveur MySQL" as BD <<système>>
+
+H -|> J
+
+rectangle "Jeu « De la terre à l'assiette »" {
+  usecase "Se connecter\n(pseudo)" as UC1
+  usecase "Créer une partie" as UC2
+  usecase "Rejoindre une partie" as UC3
+  usecase "Se déclarer prêt" as UC4
+  usecase "Lancer la partie" as UC5
+  usecase "Choisir sa recette" as UC6
+  usecase "Jouer son tour" as UC7
+  usecase "Jouer une carte\nMouvement" as UC8
+  usecase "Jouer une carte\nAttaque" as UC9
+  usecase "Jouer une carte\nDéfense" as UC10
+  usecase "Choisir une cible" as UC11
+  usecase "Piocher une carte" as UC12
+  usecase "Récolter un ingrédient" as UC13
+  usecase "Suivre la partie\n(plateau, inventaire, journal)" as UC14
+  usecase "Voir le classement" as UC15
+  usecase "Attaquer un joueur\n(tour du monstre)" as UC16
+  usecase "Enregistrer et\nsynchroniser les données" as UC17
+}
+
+J --> UC1
+J --> UC3
+J --> UC4
+J --> UC6
+J --> UC7
+J --> UC14
+J --> UC15
+H --> UC2
+H --> UC5
+M --> UC16
+
+UC7 ..> UC12 : <<include>>
+UC8 ..> UC7 : <<extend>>
+UC9 ..> UC7 : <<extend>>
+UC10 ..> UC7 : <<extend>>
+UC9 ..> UC11 : <<include>>
+UC13 ..> UC8 : <<extend>>\n[arrêt sur une case\ningrédient utile]
+
+UC17 --> BD
+UC7 ..> UC17 : <<include>>
+UC16 ..> UC17 : <<include>>
+UC2 ..> UC17 : <<include>>
+UC3 ..> UC17 : <<include>>
+
+note right of UC16
+  Après chaque tour complet,
+  1 chance sur 2.
+  Calculé par le poste de l'hôte.
+end note
+@enduml

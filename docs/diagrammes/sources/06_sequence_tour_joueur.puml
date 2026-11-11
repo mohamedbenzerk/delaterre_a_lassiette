@@ -1,0 +1,67 @@
+@startuml 06_sequence_tour_joueur
+!include style.iuml
+title Diagramme de séquence — Un tour de joueur (selon le type de carte jouée)
+autonumber
+
+actor "Joueur actif" as J
+participant "PanneauHUD\n(ig)" as HUD
+participant "Jeu\n(moteur)" as JEU
+participant "carte : Carte\n(moteur)" as C
+participant "pion ou cible : Pion\n(moteur)" as P
+participant "case : Case\n(moteur)" as CA
+participant "Pioche\n(moteur)" as PI
+participant "Classes ...SQL\n(sql)" as SQL
+database "MySQL" as BD
+participant "Postes des\nautres joueurs" as AUTRES
+
+JEU -> JEU : estMonTour() = vrai\n(PARTIE.ordre_courant = mon ordre)
+HUD --> J : cartes cliquables (3 cartes)
+
+J -> HUD : clique sur une carte
+alt carte.necessiteCible() (Attaque)
+  HUD --> J : « Choisis un adversaire »
+  J -> HUD : clique sur un pion adverse
+end
+HUD -> JEU : jouerCarte(carte, cible)
+JEU -> C : appliquer(pion, cible, jeu)
+
+alt CarteMouvement
+  C -> P : avancer(valeur, plateau)
+  P -> CA : appliquerEffet(pion, jeu)
+  note right of CA
+    Polymorphisme :
+    CaseIngredient → ajoute l'ingrédient
+    CasePioche → +1 carte
+    CaseGrange → passe sur la Route si complet
+    CaseArrivee → plat terminé, rang donné
+  end note
+else CarteAttaque (ex. Sécheresse)
+  alt cible protégée (Bouclier)
+    C -> P : la cible perd sa protection
+  else
+    C -> P : cible.reculer(2, plateau)
+  end
+else CarteDefense
+  C -> P : protegeCarte = vrai\nou toursEpouvantail = 2
+end
+
+JEU -> PI : tirer()
+PI --> JEU : nouvelle carte
+JEU -> SQL : sauvegarder(pion), sauvegarder(cible)\nretirerDeMain / poserDansMain
+SQL -> BD : UPDATE PION, MAIN, INVENTAIRE
+JEU -> SQL : ajouter(action « Rouge joue Sécheresse sur Jaune »)
+SQL -> BD : INSERT INTO ACTION
+JEU -> SQL : passerTour(idPartie, ordreSuivant, numTour)
+SQL -> BD : UPDATE PARTIE SET ordre_courant = ...
+
+loop toutes les 0,5 s (dans miseAJour())
+  AUTRES -> BD : lireDepuis(idPartie, derniereAction)\nSELECT * FROM ACTION WHERE id_action > ?
+  BD --> AUTRES : nouvelles actions
+  AUTRES -> AUTRES : relire les pions,\nanimer les déplacements,\nafficher le journal
+end
+
+note over JEU, BD
+  Si ordre_courant revient au joueur 1, un tour complet est fini :
+  le poste de l'hôte lance le tour du monstre (diagramme 07).
+end note
+@enduml

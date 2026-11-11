@@ -1,0 +1,47 @@
+@startuml 12_deploiement
+!include style.iuml
+title Diagramme de déploiement — 4 postes clients et 1 serveur MySQL
+left to right direction
+
+node "PC joueur 1 (hôte)" as PC1 {
+  artifact "delaterre_a_lassiette.jar" as A1
+  component "ig" as IG1
+  component "moteur" as M1
+  component "sql" as S1
+}
+node "PC joueur 2" as PC2 {
+  artifact "delaterre_a_lassiette.jar" as A2
+}
+node "PC joueur 3" as PC3 {
+  artifact "delaterre_a_lassiette.jar" as A3
+}
+node "PC joueur 4" as PC4 {
+  artifact "delaterre_a_lassiette.jar" as A4
+}
+
+node "Serveur de l'école" <<serveur>> as SRV {
+  database "MySQL\nbase : delaterre_assiette\n(tables JOUEUR, PARTIE, PION,\nRECETTE, INGREDIENT, COMPOSITION,\nINVENTAIRE, CARTE, MAIN,\nMONSTRE, ACTION)" as BD
+}
+
+IG1 -down-> M1
+M1 -down-> S1
+S1 --> BD : JDBC / TCP 3306
+A2 --> BD : JDBC / TCP 3306
+A3 --> BD : JDBC / TCP 3306
+A4 --> BD : JDBC / TCP 3306
+
+note bottom of PC1
+  Chaque PC a : Java (JRE),
+  le même .jar créé avec NetBeans,
+  le pilote MySQL Connector/J,
+  les images et les fichiers du plateau
+  (rangés dans src/resources, donc dans le .jar)
+  et le fichier bd.properties (identifiants,
+  jamais envoyé sur GitHub).
+end note
+note top of SRV
+  Les 4 postes ne se parlent pas
+  directement : ils partagent la
+  même base de données.
+end note
+@enduml

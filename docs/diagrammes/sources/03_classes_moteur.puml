@@ -1,0 +1,273 @@
+@startuml 03_classes_moteur
+!include style.iuml
+title Diagramme de classes — Package moteur (règles du jeu)
+skinparam nodesep 40
+skinparam ranksep 50
+
+package moteur {
+
+  enum Zone {
+    FERME
+    ROUTE
+    CUISINE
+  }
+
+  enum TypeIngredient {
+    LEGUME
+    CEREALE
+    VIANDE
+  }
+
+  interface Dessinable {
+    + rendu(contexte : Graphics2D) : void
+  }
+
+  interface Animable {
+    + miseAJour() : void
+    + estEnMouvement() : boolean
+  }
+
+  class Jeu {
+    - idPartie : int
+    - plateau : Plateau
+    - pions : List<Pion>
+    - pionLocal : Pion
+    - gestionMonstres : GestionMonstres
+    - pioche : Pioche
+    - ordreCourant : int
+    - numTour : int
+    - estHote : boolean
+    - derniereAction : int
+    --
+    + miseAJour() : void
+    + rendu(contexte : Graphics2D) : void
+    + estTermine() : boolean
+    + estMonTour() : boolean
+    + jouerCarte(carte : Carte, cible : Pion) : void
+    - passerAuJoueurSuivant() : void
+    + estHote() : boolean
+    - synchroniser() : void
+    - calculerRang(pion : Pion) : void
+  }
+
+  class Plateau {
+    - tileMap : TileMap
+    - cases : Map<Zone, List<Case>>
+    --
+    + chargerParcours(fichier : String) : void
+    + getCase(zone : Zone, index : int) : Case
+    + nbCases(zone : Zone) : int
+    + rendu(contexte : Graphics2D) : void
+  }
+
+  class TileMap {
+    + {static} TAILLE_TUILE : int = 32
+    - tileset : BufferedImage
+    - carte : int[][]
+    --
+    + charger(fichierCarte : String, fichierTileset : String) : void
+    - getTuile(numero : int) : BufferedImage
+    + rendu(contexte : Graphics2D) : void
+  }
+
+  abstract class Case {
+    # zone : Zone
+    # index : int
+    # colonne : int
+    # ligne : int
+    # icone : BufferedImage
+    --
+    + {abstract} appliquerEffet(pion : Pion, jeu : Jeu) : void
+    + getX() : int
+    + getY() : int
+    + rendu(contexte : Graphics2D) : void
+  }
+  class CaseSimple
+  class CaseDepart
+  class CaseIngredient {
+    - ingredient : Ingredient
+  }
+  class CasePioche
+  class CaseGrange
+  class CaseEvenement {
+    - type : String
+  }
+  class CaseArrivee
+
+  class Pion {
+    - id : int
+    - pseudo : String
+    - couleur : Color
+    - zone : Zone
+    - indexCase : int
+    - recette : Recette
+    - inventaire : List<Ingredient>
+    - main : List<Carte>
+    - toursBloques : int
+    - protegeCarte : boolean
+    - toursEpouvantail : int
+    - cibleAppat : boolean
+    - rang : int
+    - x, y : double
+    - plateau : Plateau
+    --
+    + avancer(nbCases : int) : void
+    + reculer(nbCases : int) : void
+    + ajouterIngredient(i : Ingredient) : void
+    + perdreIngredient() : Ingredient
+    + aTousLesIngredients() : boolean
+    + besoinDe(i : Ingredient) : boolean
+    + progression() : int
+    + estFini() : boolean
+    + miseAJour() : void
+    + estEnMouvement() : boolean
+    + rendu(contexte : Graphics2D) : void
+  }
+
+  abstract class Carte {
+    # id : int
+    # nom : String
+    # description : String
+    # image : BufferedImage
+    --
+    + {abstract} appliquer(joueur : Pion, cible : Pion, jeu : Jeu) : void
+    + {abstract} necessiteCible() : boolean
+    + rendu(contexte : Graphics2D, x : int, y : int) : void
+    + {static} creer(id, nom, famille, valeur) : Carte
+  }
+  class CarteMouvement {
+    - valeur : int
+  }
+  abstract class CarteAttaque {
+    + necessiteCible() : boolean
+    # cibleProtegee(cible : Pion) : boolean
+  }
+  class CarteSecheresse
+  class CartePanne
+  class CarteVol
+  class CarteAppat
+  abstract class CarteDefense {
+    + necessiteCible() : boolean
+  }
+  class CarteBouclier
+  class CarteEpouvantail
+
+  class Pioche {
+    - catalogue : List<Carte>
+    - hasard : Random
+    --
+    + tirer() : Carte
+  }
+
+  abstract class Monstre {
+    # zone : Zone
+    # x, y : double
+    # xRepos, yRepos : double
+    # cible : Pion
+    # image : BufferedImage
+    # enMouvement : boolean
+    --
+    + seDeplacerVers(cible : Pion) : void
+    + miseAJour() : void
+    + estEnMouvement() : boolean
+    + {abstract} agir(cible : Pion, jeu : Jeu) : void
+    + rendu(contexte : Graphics2D) : void
+  }
+  class Sanglier
+  class Tempete <<version complète>>
+  class Rat <<version complète>>
+
+  class GestionMonstres {
+    - monstres : List<Monstre>
+    - hasard : Random
+    --
+    + tourDuMonstre(pions : List<Pion>, jeu : Jeu) : Pion
+    + animer(typeMonstre : String, cible : Pion) : void
+    - choisirCible(pions : List<Pion>) : Pion
+    + miseAJour() : void
+    + estEnMouvement() : boolean
+    + rendu(contexte : Graphics2D) : void
+  }
+
+  class Recette {
+    - id : int
+    - nom : String
+    - ingredients : List<Ingredient>
+  }
+  class Ingredient {
+    - id : int
+    - nom : String
+    - type : TypeIngredient
+  }
+}
+
+Jeu *-- "1" Plateau
+Jeu *-- "4" Pion
+Jeu *-- "1" GestionMonstres
+GestionMonstres *-- "1..3" Monstre
+Jeu *-- "1" Pioche
+Plateau *-- "1" TileMap
+Plateau *-- "36" Case
+Pion o-- "0..3" Carte : main >
+Pion --> "0..1" Recette
+Pion o-- "0..4" Ingredient : inventaire >
+Recette o-- "4" Ingredient
+CaseIngredient --> "1" Ingredient
+Pioche ..> Carte : <<crée>>
+Monstre --> "0..1" Pion : cible >
+Ingredient --> TypeIngredient
+Case --> Zone
+
+Case <|-- CaseSimple
+Case <|-- CaseDepart
+Case <|-- CaseIngredient
+Case <|-- CasePioche
+Case <|-- CaseGrange
+Case <|-- CaseEvenement
+Case <|-- CaseArrivee
+
+Carte <|-- CarteMouvement
+Carte <|-- CarteAttaque
+Carte <|-- CarteDefense
+CarteAttaque <|-- CarteSecheresse
+CarteAttaque <|-- CartePanne
+CarteAttaque <|-- CarteVol
+CarteAttaque <|-- CarteAppat
+CarteDefense <|-- CarteBouclier
+CarteDefense <|-- CarteEpouvantail
+
+Monstre <|-- Sanglier
+Monstre <|-- Tempete
+Monstre <|-- Rat
+
+Dessinable <|.. Plateau
+Dessinable <|.. Case
+Dessinable <|.. Pion
+Dessinable <|.. Monstre
+Animable <|.. Pion
+Animable <|.. Monstre
+Dessinable <|.. GestionMonstres
+Animable <|.. GestionMonstres
+
+note right of Monstre
+  Polymorphisme (comme Zombie → PogoZombie) :
+  le déplacement est écrit une seule fois ici,
+  chaque monstre écrit seulement agir() :
+  • Sanglier : vole 1 ingrédient (sinon recule de 2)
+  • Tempete : bloque 1 tour
+  • Rat : recule de 2 cases
+end note
+
+note top of Dessinable
+  Interfaces Java (exigées par le cours) :
+  Jeu.rendu() parcourt une liste de Dessinable
+  dans l'ordre : plateau, cases, monstres, pions.
+  Jeu.miseAJour() appelle miseAJour() sur chaque
+  Animable (déplacement case par case animé).
+end note
+
+note bottom of Carte
+  Jeu.jouerCarte() appelle carte.appliquer(...)
+  sans savoir quelle carte c'est.
+end note
+@enduml

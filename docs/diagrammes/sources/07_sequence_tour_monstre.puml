@@ -1,0 +1,53 @@
+@startuml 07_sequence_tour_monstre
+!include style.iuml
+title Diagramme de séquence — Le tour du monstre (calculé sur le poste de l'hôte)
+autonumber
+
+participant "Jeu\n(moteur, poste hôte)" as JEU
+participant "monstre : Monstre\n(Sanglier, Tempete ou Rat)" as M
+participant "cible : Pion" as P
+participant "Classes ...SQL\n(sql)" as SQL
+database "MySQL" as BD
+participant "Postes des\nautres joueurs" as AUTRES
+
+JEU -> JEU : tour complet terminé\n(tous les joueurs ont joué)
+JEU -> JEU : tirage : 1 chance sur 2
+alt le monstre n'agit pas
+  JEU -> SQL : ajouter(action « Le monstre dort »)
+  SQL -> BD : INSERT INTO ACTION
+else le monstre agit
+  alt un pion est marqué cibleAppat
+    JEU -> JEU : cible = pion appâté\n(puis cibleAppat = faux)
+  else
+    JEU -> JEU : choisirCibleMonstre()\n(tirage au hasard,\nle pion en tête compte 2 fois)
+  end
+  JEU -> JEU : monstre = monstre de la zone de la cible
+  alt cible.toursEpouvantail > 0
+    JEU -> SQL : ajouter(action « Épouvantail : le monstre fuit »)
+    SQL -> BD : INSERT INTO ACTION
+  else
+    JEU -> M : seDeplacerVers(cible)
+    loop à chaque image (40 ms) jusqu'à la case de la cible
+      M -> M : miseAJour() : x, y se rapprochent
+    end
+    M -> P : agir(cible, jeu)
+    note right of P
+      Polymorphisme :
+      Sanglier → perdreIngredient()
+                 (sinon reculer(2))
+      Tempete → toursBloques = 1
+      Rat → reculer(2)
+    end note
+    M -> M : retour à sa place de repos
+    JEU -> SQL : sauvegarder(cible), sauvegarder(monstre)
+    SQL -> BD : UPDATE PION, MONSTRE, INVENTAIRE
+    JEU -> SQL : ajouter(action « Le Sanglier vole une carotte à Bleu »)
+    SQL -> BD : INSERT INTO ACTION
+  end
+end
+JEU -> SQL : passerTour(idPartie, 1, numTour + 1)
+SQL -> BD : UPDATE PARTIE SET num_tour = num_tour + 1
+
+AUTRES -> BD : lisent la nouvelle ACTION (toutes les 0,5 s)
+AUTRES -> AUTRES : animent le monstre vers la cible
+@enduml

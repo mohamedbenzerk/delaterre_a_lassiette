@@ -1,0 +1,57 @@
+@startuml 09_activite_tour
+!include style.iuml
+title Diagramme d'activité — Un tour de joueur
+
+start
+if (Le pion est bloqué ?\n(Panne ou Tempête)) then (oui)
+  :toursBloques = toursBloques - 1;
+  :Écrire « X passe son tour » dans le journal;
+  :Passer au joueur suivant;
+  stop
+else (non)
+endif
+
+:Afficher les 3 cartes de la main;
+:Le joueur clique sur une carte;
+
+switch (Famille de la carte ?)
+case (Mouvement)
+  :Le pion avance de 1 à 4 cases;
+  switch (Case d'arrivée ?)
+  case (Ingrédient)
+    if (La recette en a besoin\net il ne l'a pas encore ?) then (oui)
+      :Ajouter l'ingrédient\nà l'inventaire;
+    else (non)
+    endif
+  case (Pioche ou\nStation-service)
+    :Piocher 1 carte en plus;
+  case (Grange)
+    if (4 ingrédients réunis ?) then (oui)
+      :Sortir de la Ferme,\nle pion devient un camion\n(zone Route);
+    else (non)
+      :Continuer à tourner\ndans la boucle de la Ferme;
+    endif
+  case (Événement)
+    :Bouchon : recule de 1\nou Raccourci : avance de 2;
+  case (Assiette)
+    :Plat terminé,\nle joueur reçoit son rang;
+  case (Autre)
+    :Rien de spécial;
+  endswitch
+case (Attaque)
+  :Choisir un adversaire;
+  if (L'adversaire a un Bouclier ?) then (oui)
+    :Le Bouclier est utilisé,\nl'attaque est annulée;
+  else (non)
+    :Appliquer l'effet :\nSécheresse (recule de 2), Panne (passe 1 tour),\nVol (perd 1 ingrédient), Appât (monstre envoyé);
+  endif
+case (Défense)
+  :Activer la protection :\nBouclier (prochaine attaque)\nou Épouvantail (monstre, 2 tours);
+endswitch
+
+:Retirer la carte jouée de la main;
+:Piocher 1 carte (retour à 3 cartes);
+:Enregistrer pions, main, inventaire\net l'action dans la base;
+:Passer au joueur suivant;
+stop
+@enduml

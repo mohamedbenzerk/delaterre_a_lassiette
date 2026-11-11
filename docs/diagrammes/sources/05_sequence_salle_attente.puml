@@ -1,0 +1,50 @@
+@startuml 05_sequence_salle_attente
+!include style.iuml
+title Diagramme de séquence — Connexion, salle d'attente et lancement
+autonumber
+
+actor "Joueur (hôte)" as H
+participant "EcranConnexion\nEcranSalleAttente\n(ig)" as IG
+participant "JoueurSQL\nPartieSQL\nPionSQL\n(sql)" as SQL
+database "MySQL" as BD
+participant "Postes des\n3 autres joueurs" as AUTRES
+
+H -> IG : saisit son pseudo, clique « Valider »
+IG -> SQL : connecter(pseudo)
+SQL -> BD : SELECT / INSERT INTO JOUEUR
+BD --> SQL : id_joueur
+SQL --> IG : idJoueur
+
+H -> IG : clique « Créer une partie »
+IG -> SQL : creer(nom, idJoueur)
+SQL -> BD : INSERT INTO PARTIE (etat = 'ATTENTE')
+SQL -> BD : INSERT INTO PION (ordre = 1, couleur = bleu)
+SQL --> IG : idPartie
+IG --> H : salle d'attente (1/4 joueurs)
+
+group Les 3 autres joueurs rejoignent
+  AUTRES -> BD : listerEnAttente() puis\nrejoindre(idPartie, idJoueur)\nINSERT INTO PION (ordre 2, 3, 4)
+end
+
+loop toutes les 0,5 s tant que l'état = ATTENTE
+  IG -> SQL : rafraichir() → listerPions(idPartie)
+  SQL -> BD : SELECT pseudo, couleur, pret FROM PION ...
+  BD --> SQL : liste des joueurs
+  SQL --> IG : liste
+  IG --> H : met à jour la liste (x/4, prêts)
+end
+
+H -> IG : clique « Prêt »
+IG -> SQL : setPret(idPion)
+SQL -> BD : UPDATE PION SET pret = 1
+
+alt 4 joueurs présents et tous prêts
+  H -> IG : clique « Lancer la partie »
+  IG -> SQL : setEtat(idPartie, 'CHOIX_RECETTE')
+  SQL -> BD : UPDATE PARTIE SET etat = 'CHOIX_RECETTE'
+  IG --> H : écran Choix de la recette
+  AUTRES -> BD : lisent etat = 'CHOIX_RECETTE'\n→ écran Choix de la recette
+else sinon
+  IG --> H : bouton « Lancer » grisé
+end
+@enduml

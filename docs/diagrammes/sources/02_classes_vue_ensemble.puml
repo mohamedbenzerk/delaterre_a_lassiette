@@ -1,0 +1,105 @@
+@startuml 02_classes_vue_ensemble
+!include style.iuml
+title Diagramme de classes — Vue d'ensemble (3 packages NetBeans)
+skinparam packageStyle folder
+hide empty members
+hide circle
+allowmixing
+
+package "ig  (interface graphique)" as ig #EAF3FB {
+  class FenetreDeJeu
+  class EcranConnexion
+  class EcranSalleAttente
+  class EcranChoixRecette
+  class PanneauPlateau
+  class PanneauHUD
+  class EcranClassement
+}
+
+package "moteur  (règles du jeu)" as moteur #F1F8EE {
+  class Jeu
+  interface Dessinable
+  interface Animable
+  class Plateau
+  class TileMap
+  abstract class Case
+  class Pion
+  abstract class Carte
+  class Pioche
+  abstract class Monstre
+  class GestionMonstres
+  class Recette
+  class Ingredient
+}
+
+package "sql  (accès à la base)" as sql #FBF4E6 {
+  class ConnexionBD
+  class JoueurSQL
+  class PartieSQL
+  class PionSQL
+  class CarteSQL
+  class RecetteSQL
+  class MonstreSQL
+  class ActionSQL
+}
+
+database "Serveur MySQL\n(delaterre_assiette)" as BD
+
+FenetreDeJeu *-- EcranConnexion
+FenetreDeJeu *-- EcranSalleAttente
+FenetreDeJeu *-- EcranChoixRecette
+FenetreDeJeu *-- PanneauPlateau
+FenetreDeJeu *-- PanneauHUD
+FenetreDeJeu *-- EcranClassement
+FenetreDeJeu --> Jeu : pilote\n(Timer 40 ms)
+
+Jeu *-- Plateau
+Plateau *-- TileMap
+Plateau *-- "36" Case
+Jeu *-- "4" Pion
+Jeu *-- GestionMonstres
+GestionMonstres *-- "1..3" Monstre
+Jeu *-- Pioche
+Pioche ..> Carte : crée
+Pion o-- "0..3" Carte : main
+Pion --> "0..1" Recette
+Recette o-- "4" Ingredient
+Dessinable <|.. Case
+Dessinable <|.. Pion
+Dessinable <|.. Monstre
+Animable <|.. Pion
+Animable <|.. Monstre
+
+Jeu ..> PartieSQL
+Jeu ..> PionSQL
+Jeu ..> ActionSQL
+Jeu ..> MonstreSQL
+EcranConnexion ..> JoueurSQL
+EcranSalleAttente ..> PartieSQL
+EcranChoixRecette ..> RecetteSQL
+Pioche ..> CarteSQL
+
+JoueurSQL ..> ConnexionBD
+PartieSQL ..> ConnexionBD
+PionSQL ..> ConnexionBD
+CarteSQL ..> ConnexionBD
+RecetteSQL ..> ConnexionBD
+MonstreSQL ..> ConnexionBD
+ActionSQL ..> ConnexionBD
+ConnexionBD --> BD : JDBC
+
+note bottom of ig
+  Affiche et récupère les clics.
+  Ne contient aucune règle du jeu.
+end note
+note bottom of moteur
+  Contient toutes les règles.
+  Ne connaît pas Swing (sauf Graphics2D
+  pour dessiner, comme dans le cours).
+end note
+note bottom of sql
+  Seul package qui parle à la base.
+  Une classe ...SQL par table
+  (modèle JoueurSQL du prof).
+end note
+@enduml

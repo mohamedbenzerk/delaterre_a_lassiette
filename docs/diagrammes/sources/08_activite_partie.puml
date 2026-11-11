@@ -1,0 +1,50 @@
+@startuml 08_activite_partie
+!include style.iuml
+title Diagramme d'activité — Déroulement complet d'une partie
+
+|Joueur|
+start
+:Saisir son pseudo;
+if (Créer ou rejoindre ?) then (créer)
+  :Créer une partie\n(devient l'hôte);
+else (rejoindre)
+  :Choisir une partie en attente\net la rejoindre;
+endif
+:Recevoir une couleur\n(bleu, rouge, vert, jaune);
+:Cliquer sur « Prêt »;
+
+|Hôte|
+while (4 joueurs présents et prêts ?) is (non)
+  :Attendre\n(la liste se met à jour toutes les 0,5 s);
+endwhile (oui)
+:Lancer la partie;
+
+|Joueur|
+:Choisir sa recette\n(Tajine, Couscous, Burger,\nPoulet aux légumes);
+:Recevoir 3 cartes\net placer son pion sur Départ;
+
+|Jeu (moteur)|
+repeat
+  :Donner la main au joueur suivant\n(ordre 1 → 2 → 3 → 4,\nles joueurs qui ont fini sont sautés);
+  |Joueur|
+  :Jouer son tour\n(détail : diagramme 09);
+  |Jeu (moteur)|
+  if (Le joueur a atteint l'Assiette ?) then (oui)
+    :Donner son rang (1er, 2e, 3e);
+  else (non)
+  endif
+  if (Tour complet fini ?\n(les 4 joueurs ont joué)) then (oui)
+    |Monstre (PNJ)|
+    :Tour du monstre\n(1 chance sur 2 d'agir,\ndétail : diagramme 07);
+    |Jeu (moteur)|
+  else (non)
+  endif
+repeat while (Moins de 3 joueurs ont fini ?) is (oui)
+->non;
+:Partie terminée\n(état = TERMINEE);
+:Enregistrer les rangs et les scores\ndans la base;
+
+|Joueur|
+:Voir le classement;
+stop
+@enduml

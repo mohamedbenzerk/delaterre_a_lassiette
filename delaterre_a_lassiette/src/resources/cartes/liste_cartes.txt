@@ -1,0 +1,11 @@
+# fichier;nom;famille;valeur;nb_exemplaires;effet  (même contenu que la table CARTE)
+carte_avance1.png;Avance 1;MOUVEMENT;1;6;Avance de 1 case.
+carte_avance2.png;Avance 2;MOUVEMENT;2;6;Avance de 2 cases.
+carte_avance3.png;Avance 3;MOUVEMENT;3;5;Avance de 3 cases.
+carte_avance4.png;Avance 4;MOUVEMENT;4;4;Avance de 4 cases.
+carte_secheresse.png;Sécheresse;ATTAQUE;0;3;La cible recule de 2 cases.
+carte_panne.png;Panne;ATTAQUE;0;3;La cible passe son prochain tour.
+carte_vol.png;Vol;ATTAQUE;0;2;La cible perd 1 ingrédient (Ferme).
+carte_appat.png;Appât;ATTAQUE;0;2;Le monstre ira chez la cible.
+carte_bouclier.png;Bouclier;DEFENSE;0;3;Annule la prochaine attaque.
+carte_epouvantail.png;Épouvantail;DEFENSE;0;2;Le monstre ne t'attaque pas pendant 2 tours.

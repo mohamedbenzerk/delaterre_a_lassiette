@@ -1,0 +1,136 @@
+@startuml 14_MLD
+!include style.iuml
+title MLD — Modèle Logique de Données (tables MySQL)
+hide circle
+hide methods
+skinparam linetype ortho
+skinparam ClassHeaderBackgroundColor #E3ECF7
+skinparam ClassBorderColor #3E6593
+skinparam ClassBackgroundColor #FAFCFF
+
+entity "JOUEUR" as JOUEUR {
+  <b>PK</b> id_joueur : INT
+  --
+  pseudo : VARCHAR(30) UNIQUE
+  nb_parties : INT
+  nb_victoires : INT
+}
+
+entity "PARTIE" as PARTIE {
+  <b>PK</b> id_partie : INT
+  --
+  nom : VARCHAR(40)
+  etat : ENUM(ATTENTE, CHOIX_RECETTE,\n  EN_COURS, TERMINEE)
+  ordre_courant : TINYINT
+  num_tour : INT
+  date_creation : DATETIME
+}
+
+entity "PION" as PION {
+  <b>PK</b> id_pion : INT
+  --
+  <i>FK</i> #id_joueur : INT
+  <i>FK</i> #id_partie : INT
+  <i>FK</i> #id_recette : INT (NULL)
+  couleur : VARCHAR(10)
+  ordre : TINYINT (1 à 4, 1 = hôte)
+  pret : BOOLEAN
+  zone : ENUM(FERME, ROUTE, CUISINE)
+  index_case : TINYINT
+  tours_bloques : TINYINT
+  protege_carte : BOOLEAN
+  tours_epouvantail : TINYINT
+  cible_appat : BOOLEAN
+  rang : TINYINT (NULL)
+  score : INT
+}
+
+entity "RECETTE" as RECETTE {
+  <b>PK</b> id_recette : INT
+  --
+  nom : VARCHAR(40)
+  image : VARCHAR(60)
+}
+
+entity "INGREDIENT" as INGREDIENT {
+  <b>PK</b> id_ingredient : INT
+  --
+  nom : VARCHAR(30)
+  type : ENUM(LEGUME, CEREALE, VIANDE)
+  image : VARCHAR(60)
+}
+
+entity "COMPOSITION" as COMPOSITION {
+  <b>PK</b> <i>FK</i> #id_recette : INT
+  <b>PK</b> <i>FK</i> #id_ingredient : INT
+}
+
+entity "INVENTAIRE" as INVENTAIRE {
+  <b>PK</b> <i>FK</i> #id_pion : INT
+  <b>PK</b> <i>FK</i> #id_ingredient : INT
+}
+
+entity "CARTE" as CARTE {
+  <b>PK</b> id_carte : INT
+  --
+  nom : VARCHAR(30)
+  famille : ENUM(MOUVEMENT,\n  ATTAQUE, DEFENSE)
+  valeur : TINYINT
+  description : VARCHAR(120)
+  nb_exemplaires : TINYINT
+  image : VARCHAR(60)
+}
+
+entity "MAIN" as MAIN {
+  <b>PK</b> <i>FK</i> #id_pion : INT
+  <b>PK</b> emplacement : TINYINT (1 à 3)
+  --
+  <i>FK</i> #id_carte : INT
+}
+
+entity "MONSTRE" as MONSTRE {
+  <b>PK</b> id_monstre : INT
+  --
+  <i>FK</i> #id_partie : INT
+  type : ENUM(SANGLIER, TEMPETE, RAT)
+  zone : ENUM(FERME, ROUTE, CUISINE)
+  index_case : TINYINT
+}
+
+entity "ACTION" as ACTION {
+  <b>PK</b> id_action : INT AUTO_INCREMENT
+  --
+  <i>FK</i> #id_partie : INT
+  <i>FK</i> #id_pion_auteur : INT (NULL)
+  <i>FK</i> #id_monstre : INT (NULL)
+  <i>FK</i> #id_carte : INT (NULL)
+  <i>FK</i> #id_pion_cible : INT (NULL)
+  num_tour : INT
+  type : VARCHAR(20)
+  texte : VARCHAR(150)
+  date_action : DATETIME
+}
+
+JOUEUR ||--o{ PION
+PARTIE ||--|{ PION
+RECETTE |o--o{ PION
+RECETTE ||--|{ COMPOSITION
+INGREDIENT ||--o{ COMPOSITION
+PION ||--o{ INVENTAIRE
+INGREDIENT ||--o{ INVENTAIRE
+PION ||--o{ MAIN
+CARTE ||--o{ MAIN
+PARTIE ||--|{ MONSTRE
+PARTIE ||--o{ ACTION
+PION |o--o{ ACTION : auteur
+PION |o--o{ ACTION : cible
+MONSTRE |o--o{ ACTION
+CARTE |o--o{ ACTION
+
+note right of MAIN
+  Clé primaire = (id_pion, emplacement)
+  et non (id_pion, id_carte) :
+  un joueur peut avoir deux fois
+  la même carte (ex. 2 × « Avance 2 »).
+end note
+@enduml

@@ -1,0 +1,161 @@
+@startuml 04_classes_ig_sql
+!include style.iuml
+title Diagramme de classes — Packages ig (écrans) et sql (accès à la base)\nSignatures exactes : docs/CONTRAT_CODE.md
+allowmixing
+
+package "ig" #EAF3FB {
+  class FenetreDeJeu <<extends JFrame>> {
+    - timer : Timer
+    - cartes : CardLayout
+    - jeu : Jeu
+    - idJoueur, idPartie, idPion : int
+    --
+    + FenetreDeJeu()
+    + afficherEcran(nom : String) : void
+    + demarrerPartie(idPartie : int, idPionLocal : int) : void
+    + demarrerPartieLocale() : void
+    + getJeu() : Jeu
+    + actionPerformed(e : ActionEvent) : void
+    + {static} main(args : String[]) : void
+  }
+  class EcranConnexion <<extends JPanel>> {
+    - champPseudo : JTextField
+    - boutonValider : JButton
+    + valider() : void
+  }
+  class EcranSalleAttente <<extends JPanel>> {
+    - listeParties : JList<String>
+    - listeJoueurs : JList<String>
+    - boutonCreer : JButton
+    - boutonRejoindre : JButton
+    - boutonPret : JButton
+    - boutonLancer : JButton
+    + rafraichir() : void
+  }
+  class EcranChoixRecette <<extends JPanel>> {
+    - boutonsRecettes : List<JButton>
+    + choisir(idRecette : int) : void
+  }
+  class PanneauPlateau <<extends JPanel>> {
+    - image : BufferedImage
+    + paintComponent(g : Graphics) : void
+  }
+  class PanneauHUD <<extends JPanel>> {
+    - zonesCartes : Rectangle[]
+    + paintComponent(g : Graphics) : void
+    + mouseClicked(e : MouseEvent) : void
+    - choisirCible() : Pion
+  }
+  class EcranClassement <<extends JPanel>> {
+    - tableau : JTable
+    + afficher(idPartie : int) : void
+  }
+}
+
+package "sql" #FBF4E6 {
+  class ConnexionBD <<singleton>> {
+    - {static} connexion : Connection
+    - {static} lireIdentifiants() : Properties
+    + {static} get() : Connection
+    + {static} fermer() : void
+  }
+  note top of ConnexionBD
+    Ouvre la connexion UNE seule fois (conseil du prof).
+    Adresse, utilisateur et mot de passe sont lus dans
+    bd.properties : ce fichier n'est PAS envoyé sur
+    GitHub (dépôt public, ajouté au .gitignore).
+  end note
+  class JoueurSQL {
+    + connecter(pseudo : String) : int
+    + enregistrerResultat(idJoueur : int, rang : int) : void
+  }
+  class PartieSQL {
+    + creer(nom : String, idJoueurHote : int) : int
+    + listerEnAttente() : List<String[]>
+    + rejoindre(idPartie : int, idJoueur : int) : int
+    + getIdPion(idPartie : int, idJoueur : int) : int
+    + getEtat(idPartie : int) : String
+    + setEtat(idPartie : int, etat : String) : void
+    + getOrdreCourant(idPartie : int) : int
+    + getNumTour(idPartie : int) : int
+    + passerTour(idPartie : int, ordre : int, numTour : int) : void
+  }
+  class PionSQL {
+    + listerPions(idPartie : int) : List<Pion>
+    + setPret(idPion : int, pret : boolean) : void
+    + setRecette(idPion : int, idRecette : int) : void
+    + sauvegarder(pion : Pion) : void
+    + ajouterIngredient(idPion : int, idIngr : int) : void
+    + retirerIngredient(idPion : int, idIngr : int) : void
+  }
+  class CarteSQL {
+    + catalogue() : List<Carte>
+    + poserDansMain(idPion : int, emplacement : int, idCarte : int) : void
+    + retirerDeMain(idPion : int, emplacement : int) : void
+  }
+  class RecetteSQL {
+    + listerRecettes() : List<Recette>
+  }
+  class MonstreSQL {
+    + initialiser(idPartie : int) : void
+    + sauvegarder(idPartie, type, zone, indexCase) : void
+  }
+  class ActionSQL {
+    + ajouter(idPartie, numTour, idPion, type, idCarte, idCible, texte) : void
+    + lireDepuis(idPartie : int, idAction : int) : List<LigneAction>
+  }
+  class LigneAction {
+    + idAction, numTour : int
+    + type, texte : String
+    + idPionAuteur, idCarte, idPionCible : Integer
+  }
+}
+
+database "MySQL" as BD
+
+
+FenetreDeJeu *-- EcranConnexion
+FenetreDeJeu *-- EcranSalleAttente
+FenetreDeJeu *-- EcranChoixRecette
+FenetreDeJeu *-- PanneauPlateau
+FenetreDeJeu *-- PanneauHUD
+FenetreDeJeu *-- EcranClassement
+
+EcranConnexion ..> JoueurSQL
+EcranSalleAttente ..> PartieSQL
+EcranSalleAttente ..> PionSQL
+EcranChoixRecette ..> RecetteSQL
+EcranClassement ..> PionSQL
+
+JoueurSQL ..> ConnexionBD
+PartieSQL ..> ConnexionBD
+PionSQL ..> ConnexionBD
+CarteSQL ..> ConnexionBD
+RecetteSQL ..> ConnexionBD
+MonstreSQL ..> ConnexionBD
+ActionSQL ..> ConnexionBD
+ActionSQL ..> LigneAction
+ConnexionBD --> BD : JDBC\n(PreparedStatement, ResultSet)
+
+note right of FenetreDeJeu
+  Comme dans le cours :
+  FenetreDeJeu extends JFrame
+  implements ActionListener.
+  Le Timer (40 ms) appelle
+  jeu.miseAJour() puis repaint().
+  Le CardLayout passe d'un écran à l'autre.
+end note
+note right of PanneauHUD
+  Panneau de droite :
+  recette + inventaire,
+  les 3 cartes (cliquables),
+  journal des actions.
+  implements MouseListener
+end note
+note bottom of ActionSQL
+  La table ACTION sert de journal
+  et de synchronisation : chaque poste
+  lit les actions plus récentes que
+  la dernière qu'il a déjà vue.
+end note
+@enduml

@@ -23,3 +23,16 @@
 hs_err_pid*
 replay_pid*
 /delaterre_a_lassiette/nbproject/private/
+
+# --- Projet De la terre à l'assiette ---
+# Fichiers produits par NetBeans à la compilation
+build/
+dist/
+**/nbproject/private/
+# Identifiants de la base de données : JAMAIS sur GitHub (dépôt public)
+bd.properties
+# Le pilote JDBC du dossier lib/ doit être partagé avec toute l'équipe
+!lib/*.jar
+!**/lib/*.jar
+# Fichiers reçus de Claude sur ce PC (pas pour le dépôt)
+Claude outputs/
