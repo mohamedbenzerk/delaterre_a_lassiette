@@ -6,7 +6,7 @@
 package moteur;
 
 /**
- * Sécheresse : la cible recule de 2 cases.
+ * Sécheresse : la cible recule de 2 cases (sans effet de case à l'arrivée).
  */
 public class CarteSecheresse extends CarteAttaque {
 
@@ -20,9 +20,13 @@ public class CarteSecheresse extends CarteAttaque {
         super(id, nom);
     }
 
+    /** Nombre de cases de recul. */
+    public static final int RECUL = 2;
+
     @Override
-    public void appliquer(Pion joueur, Pion cible, Jeu jeu) {
-        // TODO MO-3 : si !cibleProtegee(cible), cible.reculer(2)
+    protected void appliquerAttaque(Pion joueur, Pion cible, Jeu jeu) {
+        cible.reculer(RECUL);
+        jeu.ajouterAuJournal("Sécheresse : " + cible + " recule de " + RECUL + " cases.");
     }
 
     @Override

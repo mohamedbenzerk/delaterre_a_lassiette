@@ -21,8 +21,9 @@ public class CartePanne extends CarteAttaque {
     }
 
     @Override
-    public void appliquer(Pion joueur, Pion cible, Jeu jeu) {
-        // TODO MO-3 : si !cibleProtegee(cible), cible.setToursBloques(1)
+    protected void appliquerAttaque(Pion joueur, Pion cible, Jeu jeu) {
+        cible.setToursBloques(Math.max(cible.getToursBloques(), 1));
+        jeu.ajouterAuJournal("Panne : " + cible + " passera son prochain tour.");
     }
 
     @Override

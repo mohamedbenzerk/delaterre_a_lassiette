@@ -5,6 +5,8 @@
  */
 package moteur;
 
+import java.util.Locale;
+
 /**
  * Case où l'on récolte un ingrédient (Ferme).
  */
@@ -31,9 +33,28 @@ public class CaseIngredient extends Case {
         return ingredient;
     }
 
+    /**
+     * Le pion récolte l'ingrédient si sa recette en a besoin et s'il ne l'a pas encore.
+     *
+     * @param pion le pion qui s'arrête sur la case
+     * @param jeu la partie en cours
+     */
     @Override
     public void appliquerEffet(Pion pion, Jeu jeu) {
-        // TODO MO-2 : si pion.getRecette() contient l'ingrédient et que le pion ne l'a pas encore,
-        // pion.ajouterIngredient(ingredient) et message dans le journal.
+        Recette recette = pion.getRecette();
+        if (recette == null) {
+            return;
+        }
+        Ingredient utile = recette.trouver(ingredient);
+        if (utile != null && !pion.getInventaire().contains(utile)) {
+            pion.ajouterIngredient(utile);
+            jeu.ajouterAuJournal(pion + " récolte : " + utile.getNom()
+                    + " (" + pion.getInventaire().size() + "/" + recette.getIngredients().size() + ")");
+        }
+    }
+
+    @Override
+    protected String getNomIcone() {
+        return ingredient.getCode().toLowerCase(Locale.ROOT) + ".png";
     }
 }

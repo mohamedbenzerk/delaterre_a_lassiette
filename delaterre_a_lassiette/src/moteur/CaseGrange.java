@@ -7,6 +7,10 @@ package moteur;
 
 /**
  * Sortie de la Ferme vers la Route (Ferme, index 11).
+ * <p>
+ * Un pion qui PASSE par la Grange avec ses 4 ingrédients continue sur la Route
+ * (c'est géré dans Pion.avancer()). S'il S'ARRÊTE sur la Grange avec ses 4 ingrédients,
+ * il sort aussi : il va sur la première case de la Route.
  */
 public class CaseGrange extends Case {
 
@@ -24,7 +28,14 @@ public class CaseGrange extends Case {
 
     @Override
     public void appliquerEffet(Pion pion, Jeu jeu) {
-        // TODO MO-2 : la sortie se fait dans Pion.avancer() quand le pion PASSE par la Grange
-        // avec ses 4 ingrédients ; s'il s'arrête dessus sans les avoir, rien ne se passe.
+        if (pion.aTousLesIngredients()) {
+            pion.avancer(1);
+            jeu.ajouterAuJournal(pion + " sort de la Ferme par la Grange : en route !");
+        }
+    }
+
+    @Override
+    protected String getNomIcone() {
+        return "grange.png";
     }
 }

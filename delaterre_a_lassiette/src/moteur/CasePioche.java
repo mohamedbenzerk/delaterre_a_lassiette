@@ -6,7 +6,7 @@
 package moteur;
 
 /**
- * Case qui donne une carte en plus (Ferme).
+ * Case qui donne une carte en plus (Ferme) : le joueur pioche puis rejoue tout de suite.
  */
 public class CasePioche extends Case {
 
@@ -24,6 +24,11 @@ public class CasePioche extends Case {
 
     @Override
     public void appliquerEffet(Pion pion, Jeu jeu) {
-        // TODO MO-2 : le joueur pioche une carte en plus (jeu.getPioche()).
+        jeu.donnerCarteBonus(pion);
+    }
+
+    @Override
+    protected String getNomIcone() {
+        return "pioche.png";
     }
 }

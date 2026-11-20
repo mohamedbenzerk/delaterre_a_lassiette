@@ -24,6 +24,11 @@ public class CaseArrivee extends Case {
 
     @Override
     public void appliquerEffet(Pion pion, Jeu jeu) {
-        // TODO MO-2 : le plat est terminé, le joueur reçoit son rang (jeu donne le rang suivant).
+        jeu.attribuerRang(pion);
+    }
+
+    @Override
+    protected String getNomIcone() {
+        return "assiette.png";
     }
 }

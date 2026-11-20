@@ -6,7 +6,7 @@
 package moteur;
 
 /**
- * Vol : la cible perd 1 ingrédient (seulement si elle est dans la Ferme).
+ * Vol : la cible perd 1 ingrédient au hasard (seulement si elle est dans la Ferme).
  */
 public class CarteVol extends CarteAttaque {
 
@@ -20,9 +20,25 @@ public class CarteVol extends CarteAttaque {
         super(id, nom);
     }
 
+    /**
+     * Le Vol n'agit que sur un pion de la Ferme (sur la Route, les ingrédients sont dans le camion).
+     *
+     * @param cible pion visé
+     * @return vrai si la cible est dans la Ferme
+     */
     @Override
-    public void appliquer(Pion joueur, Pion cible, Jeu jeu) {
-        // TODO MO-3 : si cible dans la Ferme et !cibleProtegee(cible), cible.perdreIngredient()
+    protected boolean agitSur(Pion cible) {
+        return cible.getZone() == Zone.FERME;
+    }
+
+    @Override
+    protected void appliquerAttaque(Pion joueur, Pion cible, Jeu jeu) {
+        Ingredient perdu = cible.perdreIngredient();
+        if (perdu == null) {
+            jeu.ajouterAuJournal("Vol : " + cible + " n'a aucun ingrédient à perdre.");
+        } else {
+            jeu.ajouterAuJournal("Vol : " + cible + " perd " + perdu.getNom() + ".");
+        }
     }
 
     @Override

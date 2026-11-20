@@ -46,6 +46,17 @@ public class Recette {
         return Collections.unmodifiableList(ingredients);
     }
 
+    /**
+     * Cherche un ingrédient dans la recette (comparaison par code).
+     *
+     * @param ingredient ingrédient cherché, par exemple celui d'une case de la Ferme
+     * @return l'ingrédient de la recette, ou null si la recette n'en a pas besoin
+     */
+    public Ingredient trouver(Ingredient ingredient) {
+        int position = ingredients.indexOf(ingredient);
+        return position < 0 ? null : ingredients.get(position);
+    }
+
     @Override
     public String toString() {
         return nom;

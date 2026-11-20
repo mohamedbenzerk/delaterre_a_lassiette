@@ -6,9 +6,6 @@
 package moteur;
 
 import java.awt.image.BufferedImage;
-import java.io.IOException;
-import java.net.URL;
-import javax.imageio.ImageIO;
 
 /**
  * Une carte à jouer (table CARTE). Chaque sous-classe définit son effet
@@ -16,10 +13,12 @@ import javax.imageio.ImageIO;
  */
 public abstract class Carte {
 
+    /** Identifiant en base (id_carte). */
     protected final int id;
+    /** Nom exact de la carte en base. */
     protected final String nom;
+    /** Nombre de cases pour une carte Mouvement, 0 sinon. */
     protected final int valeur;
-    private BufferedImage image;
 
     /**
      * Crée une carte.
@@ -45,21 +44,22 @@ public abstract class Carte {
      * @throws IllegalArgumentException si le nom est inconnu
      */
     public static Carte creer(int id, String nom, String famille, int valeur) {
-        if ("MOUVEMENT".equals(famille)) {
+        if ("MOUVEMENT".equalsIgnoreCase(String.valueOf(famille).trim())) {
             return new CarteMouvement(id, nom, valeur);
         }
-        switch (nom) {
-            case "Sécheresse":
+        // Comparaison sans accent ni majuscule : "Épouvantail" et "EPOUVANTAIL" donnent la même carte.
+        switch (Ingredient.versCode(String.valueOf(nom))) {
+            case "SECHERESSE":
                 return new CarteSecheresse(id, nom);
-            case "Panne":
+            case "PANNE":
                 return new CartePanne(id, nom);
-            case "Vol":
+            case "VOL":
                 return new CarteVol(id, nom);
-            case "Appât":
+            case "APPAT":
                 return new CarteAppat(id, nom);
-            case "Bouclier":
+            case "BOUCLIER":
                 return new CarteBouclier(id, nom);
-            case "Épouvantail":
+            case "EPOUVANTAIL":
                 return new CarteEpouvantail(id, nom);
             default:
                 throw new IllegalArgumentException("Carte inconnue : " + nom);
@@ -101,17 +101,7 @@ public abstract class Carte {
 
     /** @return image de la carte (100 x 140), chargée une seule fois */
     public BufferedImage getImage() {
-        if (image == null) {
-            try {
-                URL url = getClass().getClassLoader().getResource("resources/cartes/" + getNomFichierImage());
-                if (url != null) {
-                    image = ImageIO.read(url);
-                }
-            } catch (IOException e) {
-                System.err.println("Image introuvable pour la carte " + nom + " : " + e.getMessage());
-            }
-        }
-        return image;
+        return Images.charger("resources/cartes/" + getNomFichierImage());
     }
 
     @Override

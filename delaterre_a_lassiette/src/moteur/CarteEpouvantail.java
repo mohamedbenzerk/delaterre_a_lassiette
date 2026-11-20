@@ -10,6 +10,9 @@ package moteur;
  */
 public class CarteEpouvantail extends CarteDefense {
 
+    /** Nombre de tours de protection contre le monstre. */
+    public static final int DUREE = 2;
+
     /**
      * Crée la carte.
      *
@@ -22,7 +25,8 @@ public class CarteEpouvantail extends CarteDefense {
 
     @Override
     public void appliquer(Pion joueur, Pion cible, Jeu jeu) {
-        // TODO MO-3 : joueur.setToursEpouvantail(2)
+        joueur.setToursEpouvantail(DUREE);
+        jeu.ajouterAuJournal(joueur + " installe un Épouvantail : protégé du monstre pendant " + DUREE + " tours.");
     }
 
     @Override

@@ -21,8 +21,9 @@ public class CarteAppat extends CarteAttaque {
     }
 
     @Override
-    public void appliquer(Pion joueur, Pion cible, Jeu jeu) {
-        // TODO MO-3 : si !cibleProtegee(cible), cible.setCibleAppat(true)
+    protected void appliquerAttaque(Pion joueur, Pion cible, Jeu jeu) {
+        cible.setCibleAppat(true);
+        jeu.ajouterAuJournal("Appât : au prochain tour du monstre, il ira chez " + cible + ".");
     }
 
     @Override

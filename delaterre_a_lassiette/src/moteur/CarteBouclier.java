@@ -22,7 +22,8 @@ public class CarteBouclier extends CarteDefense {
 
     @Override
     public void appliquer(Pion joueur, Pion cible, Jeu jeu) {
-        // TODO MO-3 : joueur.setProtegeCarte(true)
+        joueur.setProtegeCarte(true);
+        jeu.ajouterAuJournal(joueur + " est protégé par un Bouclier (prochaine attaque annulée).");
     }
 
     @Override

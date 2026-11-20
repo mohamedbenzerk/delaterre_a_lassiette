@@ -5,10 +5,15 @@
  */
 package moteur;
 
+import java.util.Locale;
+
 /**
- * Case sans effet (Route, étapes de la Cuisine : laver, couper, cuire, dresser).
+ * Case sans effet (Route, étapes de la Cuisine : entrée, laver, couper, cuire, dresser).
  */
 public class CaseSimple extends Case {
+
+    /** Paramètre de parcours.txt quand la case n'a pas d'étape. */
+    public static final String SANS_ETAPE = "-";
 
     private final String etape;
 
@@ -19,14 +24,14 @@ public class CaseSimple extends Case {
      * @param index position dans la zone
      * @param colonne colonne de la tuile en haut à gauche
      * @param ligne ligne de la tuile en haut à gauche
-     * @param etape étape affichée (LAVER, COUPER…) ou « - »
+     * @param etape étape affichée (ENTREE, LAVER, COUPER, CUIRE, DRESSER) ou « - »
      */
     public CaseSimple(Zone zone, int index, int colonne, int ligne, String etape) {
         super(zone, index, colonne, ligne);
         this.etape = etape;
     }
 
-    /** @return étape affichée (LAVER, COUPER…) ou « - » */
+    /** @return étape affichée (ENTREE, LAVER…) ou « - » */
     public String getEtape() {
         return etape;
     }
@@ -34,5 +39,13 @@ public class CaseSimple extends Case {
     @Override
     public void appliquerEffet(Pion pion, Jeu jeu) {
         // Pas d'effet.
+    }
+
+    @Override
+    protected String getNomIcone() {
+        if (etape == null || SANS_ETAPE.equals(etape)) {
+            return null;
+        }
+        return etape.toLowerCase(Locale.ROOT) + ".png";
     }
 }

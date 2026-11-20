@@ -70,11 +70,14 @@ public enum TypeIngredient { LEGUME, CEREALE, VIANDE }
 public class Ingredient {
     public Ingredient(int id, String nom, TypeIngredient type)
     public int getId()   public String getNom()   public TypeIngredient getType()
+    public String getCode()                        // "POMME_DE_TERRE", "BOEUF"… : deux ingrédients de même code sont égaux (equals)
+    public String getCheminIcone()                 // "resources/icones/pomme_de_terre.png"
 }
 
 public class Recette {
     public Recette(int id, String nom, List<Ingredient> ingredients)
     public int getId()   public String getNom()   public List<Ingredient> getIngredients()
+    public Ingredient trouver(Ingredient ingredient)   // l'ingrédient de la recette, ou null s'il n'est pas utile
 }
 
 public abstract class Case implements Dessinable {
@@ -90,6 +93,9 @@ public class Plateau implements Dessinable {
     public Case getCase(Zone zone, int index)
     public int nbCases(Zone zone)                  // FERME 16, ROUTE 11, CUISINE 9
     public TileMap getTileMap()
+    public int getIndexGrange()                    // 11
+    public Ingredient getIngredient(String code)   // "CAROTTE"…
+    public Point getReposMonstre(String type)      // place de repos lue dans parcours.txt (pour GestionMonstres)
 }
 
 public class Pion implements Dessinable, Animable {
@@ -113,6 +119,8 @@ public class Pion implements Dessinable, Animable {
     public int progression()           // sert à trouver le joueur en tête
     public boolean estFini()
     public int getX()   public int getY()              // pixels à l'écran (animé)
+    public void allerA(Zone zone, int indexCase)       // déplacement animé (synchronisation réseau)
+    public void copierEtat(Pion relu)                  // recopie un pion relu dans la base (utilisé par Jeu)
 }
 
 public abstract class Carte {
@@ -127,22 +135,35 @@ public abstract class Carte {
 
 public class Pioche {
     public Pioche(List<Carte> catalogue)           // catalogue avec les exemplaires (36 cartes)
+    public static Pioche creerPiocheLocale()       // partie locale : lit resources/cartes/liste_cartes.txt
     public Carte tirer()
 }
 
-public class Jeu {
+public final class Jeu {
+    public static final int TAILLE_MAIN = 3;
     public Jeu()                                   // partie LOCALE de test : 4 pions, sans base (Release 1, tests IG).
                                                    // En local, getPionLocal() = getPionCourant() et estMonTour() = vrai.
     public Jeu(int idPartie, int idPionLocal)      // partie en réseau, chargée depuis la base
     public void miseAJour()                        // appelée toutes les 40 ms ; lit la base toutes les 0,5 s
     public void rendu(Graphics2D contexte)         // ordre : plateau, cases, monstres, pions
     public boolean estTermine()
-    public boolean estMonTour()
+    public boolean estMonTour()                    // faux pendant les animations et le tour du monstre
     public boolean estHote()                       // ordre du pion local = 1
+    public boolean estTourDuMonstre()
+    public boolean animationEnCours()
     public void jouerCarte(Carte carte, Pion cible)   // cible = null si la carte n'en demande pas
     public List<Pion> getPions()   public Pion getPionLocal()   public Pion getPionCourant()
     public Plateau getPlateau()    public List<String> getJournal()
     public int getIdPartie()       public int getNumTour()
+    public List<Pion> getCiblesPossibles()         // adversaires que le joueur courant peut viser (pour le HUD)
+    public List<Pion> getClassement()              // du 1er au 4e (pour EcranClassement)
+    public void ajouterAuJournal(String texte)     // message visible par tous (les monstres peuvent l'utiliser)
+    public void donnerCarteBonus(Pion pion)        // appelé par CasePioche et la Station
+    public void attribuerRang(Pion pion)           // appelé par CaseArrivee
+}
+
+public final class Images {
+    public static BufferedImage charger(String chemin)   // image lue une seule fois (cache) ; null si absente
 }
 ```
 
@@ -257,3 +278,30 @@ public class LigneAction {                                   // une ligne de la 
 3. `Jeu.jouerCarte()` applique la carte (polymorphisme), sauvegarde avec `PionSQL` / `CarteSQL`, écrit dans `ActionSQL`, puis `PartieSQL.passerTour(...)`.
 4. Après un tour complet, si `jeu.estHote()`, `Jeu` appelle `gestionMonstres.tourDuMonstre(...)` et écrit l'action `"MONSTRE"`. L'effet (`agir`) est appliqué quand le monstre arrive sur la case : `Jeu` attend que `gestionMonstres.estEnMouvement()` soit faux avant de sauvegarder la cible et de redonner la main au joueur 1.
 5. Toutes les 0,5 s, `Jeu` lit `ActionSQL.lireDepuis(...)`, recharge les pions avec `PionSQL.listerPions(...)` et anime les déplacements (`GestionMonstres.animer(...)` pour le monstre).
+
+## 8. Notes d'intégration (moteur terminé : MO-1, MO-2, MO-3)
+
+**Règles telles qu'elles sont codées** (à valider par le PO) :
+
+- Case **Pioche** et **Station-service** : le joueur pioche une carte en plus **et rejoue tout de suite** (la main reste à 3 cartes, donc rien ne change pour le HUD et la table MAIN).
+- Les reculs dus à une attaque (Sécheresse, Bouchon, monstre) n'appliquent **pas** l'effet de la case d'arrivée.
+- **Vol** n'agit que si la cible est dans la Ferme. Un **Bouclier** est consommé par la première attaque qui aurait eu un effet.
+- **Score** : 1er = 100, 2e = 70, 3e = 40, 4e = 10 points. Le 4e est classé d'après son avance quand 3 joueurs ont fini.
+- `CarteMouvement.RECOLTE_EN_PASSANT` (faux par défaut) : mettre vrai pour récolter aussi les ingrédients des cases où l'on passe (parties plus courtes).
+
+**Pour DevIG_MONSTER (monstres)** :
+
+- `Jeu` décompte lui-même `toursEpouvantail` et remet `cibleAppat` à faux **après chaque tour du monstre** : `GestionMonstres` ne doit pas le refaire.
+- `tourDuMonstre(...)` renvoie la cible (ou `null`) ; `Jeu` attend que `estEnMouvement()` soit faux, puis écrit lui-même l'action `"MONSTRE"` dans le journal.
+- `agir()` peut écrire dans le journal avec `jeu.ajouterAuJournal(...)`. Images : `Images.charger("resources/sprites/sanglier.png")`.
+
+**Pour DevBDD (base)** :
+
+- Pendant le tour du monstre, `PARTIE.ordre_courant` vaut **0** (la colonne doit accepter 0).
+- La main est réécrite ainsi : `retirerDeMain(id, 1..3)` puis `poserDansMain(id, 1..n, idCarte)` → `poserDansMain` fait un `INSERT`.
+- `PionSQL.listerPions` : cartes créées avec `Carte.creer(...)` ; ingrédients de l'inventaire pris dans la recette du pion (mêmes `id_ingredient` que la base).
+- `MonstreSQL.initialiser(idPartie)` est appelé par la salle d'attente au lancement (BDD-4), pas par `Jeu`.
+
+**Pour SM (écrans)** :
+
+- `EcranClassement` affiche `jeu.getClassement()` et enregistre le résultat du joueur de ce PC : `new JoueurSQL().enregistrerResultat(fenetre.getIdJoueur(), jeu.getPionLocal().getRang())`.

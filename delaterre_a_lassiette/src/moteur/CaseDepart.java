@@ -26,4 +26,9 @@ public class CaseDepart extends Case {
     public void appliquerEffet(Pion pion, Jeu jeu) {
         // Pas d'effet : on repasse simplement par le Départ en faisant le tour de la Ferme.
     }
+
+    @Override
+    protected String getNomIcone() {
+        return "depart.png";
+    }
 }
